@@ -17,27 +17,6 @@
         | (E)
         | number
 
-    **** Cosas Importantes ****:
-
-    1. Lo que está en minúscula son terminales
-    2. Lo que está en mayúscula son no terminales
-    3. number son números double de java que siguen el siguiente formato:
-
-        signo   = [+-]
-        digitos = [0-9]
-        punto = .
-        exponente = [eE]
-        (digitos)+((punto)?(digitos)*)?((exponente)(signo)?(digitos)+)?
-
-        donde '+' es uno o más veces
-        donde '*' es cero o más veces
-        donde '?' es cero o una vez
-
-    4. Cuando hacemos match con un token devolvemos un objeto de tipo Token
-        4.1 Ver clase Token
-        4.2 Si encuentran un numero el constructor que tienen que usar es:
-            Token(id, val)
-        4.3 En la clase token hay constantes que definen el id de cada token
 */
 
 import java.io.StringReader;
@@ -59,22 +38,6 @@ import java.io.IOException;
         }
     }
 
-
-    /*
-
-        ****************** LEER ********************
-
-        - %public es para que la clase sea publica y se pueda utilizar en otros paquetes
-        - %class Lexer es para que la clase generada se llame "Lexer"
-        - %function nextToken el lexer generado tendra una funcion nextToken() para obtener
-           el siguiente token del input
-        - %type Token es para que la clase tome en cuenta que vamos a devolver un objeto Token
-
-        todo esto no se modifica por ningun motivo :)
-
-        *** Despues de "%type Token" pueden definir sus ER o tokens, van a encontrar
-        el ejemplo para SEMI (";") y para WHITESPACE
-    */
 %}
 
 %public
@@ -82,14 +45,48 @@ import java.io.IOException;
 %function nextToken
 %type Token
 
-SEMI = ";" // Definan aqui sus Tokens/ER por ejemplo: "el token SEMI"
-WHITE = (" "|\t|\n)
+// ==========================
+// Definición de tokens
+// ==========================
+
+SEMI      = ";"
+PLUS      = \+
+MINUS     = -
+TIMES     = \*
+DIVIDE    = /
+MOD       = %
+POWER     = \^
+LPAREN    = \(
+RPAREN    = \)
+WHITE     = (" "|\t|\n)
+
+// Número tipo double:
+DIGIT     = [0-9]
+SIGN      = [+-]
+EXP       = [eE]
+NUMBER    = {SIGN}?{DIGIT}+(\.{DIGIT}*)?({EXP}{SIGN}?{DIGIT}+)?
 
 %%
 
-<YYINITIAL>{SEMI}   { return new Token(Token.SEMI);   }
+// ==========================
+// Reglas léxicas
+// ==========================
 
-<YYINITIAL>{WHITE}  { /* NO HACER NADA */             }
+<YYINITIAL>{SEMI}      { return new Token(Token.SEMI); }
+<YYINITIAL>{PLUS}      { return new Token(Token.PLUS); }
+<YYINITIAL>{MINUS}     { return new Token(Token.MINUS); }
+<YYINITIAL>{TIMES}     { return new Token(Token.TIMES); }
+<YYINITIAL>{DIVIDE}    { return new Token(Token.DIVIDE); }
+<YYINITIAL>{MOD}       { return new Token(Token.MOD); }
+<YYINITIAL>{POWER}     { return new Token(Token.POWER); }
+<YYINITIAL>{LPAREN}    { return new Token(Token.LPAREN); }
+<YYINITIAL>{RPAREN}    { return new Token(Token.RPAREN); }
 
-<YYINITIAL>.        { return new Token(Token.ERROR);
-                      /* todo lo demas es ERROR */ }
+<YYINITIAL>{NUMBER}    {
+    double val = Double.parseDouble(yytext());
+    return new Token(Token.NUMBER, val);
+}
+
+<YYINITIAL>{WHITE}     { /* Ignorar espacios */ }
+
+<YYINITIAL>.           { return new Token(Token.ERROR); }
